@@ -1,0 +1,16 @@
+{
+  "name": "Solar Units Tracker",
+  "short_name": "Solar Tracker",
+  "description": "Monitor your solar energy generation and consumption",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#0d0d0d",
+  "icons": [
+    {
+      "src": "/file.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
