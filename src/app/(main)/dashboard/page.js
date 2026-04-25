@@ -13,12 +13,13 @@ export default function DashboardPage() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("trend");
+  const [timeframe, setTimeframe] = useState(7);
 
   useEffect(() => {
     async function loadData() {
       if (!user) return;
       try {
-        const data = await getRecentEntries(user.uid, 7);
+        const data = await getRecentEntries(user.uid, 30);
         setEntries(data);
       } catch (error) {
         console.error("Failed to load dashboard data:", error);
@@ -52,15 +53,14 @@ export default function DashboardPage() {
   const todayEntry = hasData ? entries[0] : null;
   const isToday = todayEntry && new Date(todayEntry.dateStr).toDateString() === new Date().toDateString();
   
-  const totalGen = entries.reduce((sum, e) => sum + e.generated, 0);
-  const totalCon = entries.reduce((sum, e) => sum + e.consumed, 0);
+  const graphEntries = entries.slice(0, timeframe);
 
   return (
     <main className="flex-1 p-4 md:p-6 pb-24 md:pb-24 max-w-4xl mx-auto w-full">
       <header className="mb-6 animate-fade-in">
         <h1 className="text-2xl font-bold text-white mb-1">Dashboard</h1>
         <p className="text-charcoal-400 text-sm">
-          {isToday ? "Today's summary" : "Recent summary"}
+          {isToday ? "Today's summary" : "Latest summary"}
         </p>
       </header>
 
@@ -70,7 +70,7 @@ export default function DashboardPage() {
             <div className="stagger-1">
               <StatCard
                 title={isToday ? "Today Gen" : "Latest Gen"}
-                value={todayEntry.generated.toFixed(1)}
+                value={(todayEntry.dailyGenerated ?? todayEntry.generated).toFixed(1)}
                 unit="u"
                 accentClass="accent-orange"
                 subtitle="Generated"
@@ -79,7 +79,7 @@ export default function DashboardPage() {
             <div className="stagger-2">
               <StatCard
                 title={isToday ? "Today Con" : "Latest Con"}
-                value={todayEntry.consumed.toFixed(1)}
+                value={(todayEntry.dailyConsumed ?? todayEntry.consumed).toFixed(1)}
                 unit="u"
                 accentClass="accent-green"
                 subtitle="Consumed"
@@ -88,51 +88,51 @@ export default function DashboardPage() {
             <div className="col-span-2 stagger-3">
               <StatCard
                 title="Daily Net"
-                value={Math.abs(todayEntry.generated - todayEntry.consumed).toFixed(1)}
+                value={Math.abs((todayEntry.dailyGenerated ?? todayEntry.generated) - (todayEntry.dailyConsumed ?? todayEntry.consumed)).toFixed(1)}
                 unit="u"
-                accentClass={todayEntry.generated >= todayEntry.consumed ? "accent-amber" : "accent-red"}
-                subtitle={todayEntry.generated >= todayEntry.consumed ? "Surplus Energy" : "Deficit Energy"}
+                accentClass={(todayEntry.dailyGenerated ?? todayEntry.generated) >= (todayEntry.dailyConsumed ?? todayEntry.consumed) ? "accent-amber" : "accent-red"}
+                subtitle={(todayEntry.dailyGenerated ?? todayEntry.generated) >= (todayEntry.dailyConsumed ?? todayEntry.consumed) ? "Surplus Energy" : "Deficit Energy"}
               />
             </div>
           </div>
 
           <div className="card gradient-border mt-8 p-1 stagger-4">
             <div className="bg-charcoal-900 rounded-2xl p-4">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-white">7-Day Analysis</h2>
-                <div className="flex bg-charcoal-950 p-1 rounded-xl">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold text-white">Trend Analysis</h2>
+                  <select 
+                    value={timeframe} 
+                    onChange={(e) => setTimeframe(Number(e.target.value))}
+                    className="bg-charcoal-800 text-charcoal-200 text-sm rounded-lg border border-charcoal-700 px-2 py-1 outline-none focus:border-solar-orange"
+                  >
+                    <option value={7}>Last 7 Days</option>
+                    <option value={15}>Last 15 Days</option>
+                    <option value={30}>Last 30 Days</option>
+                  </select>
+                </div>
+                <div className="flex bg-charcoal-950 p-1 rounded-xl w-full md:w-auto">
                   <button
-                    className={`tab ${activeTab === "trend" ? "active" : ""}`}
+                    className={`tab flex-1 md:flex-none ${activeTab === "trend" ? "active" : ""}`}
                     onClick={() => setActiveTab("trend")}
                   >
-                    Trend
+                    Line
                   </button>
                   <button
-                    className={`tab ${activeTab === "compare" ? "active" : ""}`}
+                    className={`tab flex-1 md:flex-none ${activeTab === "compare" ? "active" : ""}`}
                     onClick={() => setActiveTab("compare")}
                   >
-                    Compare
+                    Bar
                   </button>
                 </div>
               </div>
 
               <div className="mt-2">
                 {activeTab === "trend" ? (
-                  <TrendChart entries={entries} />
+                  <TrendChart entries={graphEntries} />
                 ) : (
-                  <ComparisonChart entries={entries} />
+                  <ComparisonChart entries={graphEntries} />
                 )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-charcoal-800">
-                <div>
-                  <p className="text-xs text-charcoal-500 uppercase tracking-wider mb-1">7d Total Gen</p>
-                  <p className="text-xl font-bold text-solar-orange">{totalGen.toFixed(1)}<span className="text-sm font-normal text-charcoal-500 ml-1">u</span></p>
-                </div>
-                <div>
-                  <p className="text-xs text-charcoal-500 uppercase tracking-wider mb-1">7d Total Con</p>
-                  <p className="text-xl font-bold text-solar-green">{totalCon.toFixed(1)}<span className="text-sm font-normal text-charcoal-500 ml-1">u</span></p>
-                </div>
               </div>
             </div>
           </div>

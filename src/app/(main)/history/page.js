@@ -173,11 +173,11 @@ export default function HistoryPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-xs text-charcoal-500 uppercase tracking-wider mb-1">Generated</p>
-                      <p className="font-semibold text-solar-orange">{entry.generated.toFixed(1)} u</p>
+                      <p className="font-semibold text-solar-orange">{(entry.dailyGenerated ?? entry.generated).toFixed(1)} u</p>
                     </div>
                     <div>
                       <p className="text-xs text-charcoal-500 uppercase tracking-wider mb-1">Consumed</p>
-                      <p className="font-semibold text-solar-green">{entry.consumed.toFixed(1)} u</p>
+                      <p className="font-semibold text-solar-green">{(entry.dailyConsumed ?? entry.consumed).toFixed(1)} u</p>
                     </div>
                   </div>
                 </div>

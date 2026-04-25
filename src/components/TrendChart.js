@@ -38,7 +38,7 @@ export default function TrendChart({ entries }) {
     datasets: [
       {
         label: "Generated",
-        data: sorted.map((e) => e.generated),
+        data: sorted.map((e) => e.dailyGenerated ?? e.generated),
         borderColor: "#f97316",
         backgroundColor: "rgba(249, 115, 22, 0.1)",
         fill: true,
@@ -52,7 +52,7 @@ export default function TrendChart({ entries }) {
       },
       {
         label: "Consumed",
-        data: sorted.map((e) => e.consumed),
+        data: sorted.map((e) => e.dailyConsumed ?? e.consumed),
         borderColor: "#22c55e",
         backgroundColor: "rgba(34, 197, 94, 0.1)",
         fill: true,

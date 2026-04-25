@@ -37,13 +37,15 @@ export function parseDateStr(dateStr) {
 /**
  * Add a new entry to Firestore
  */
-export async function addEntry(userId, { date, generated, consumed }) {
+export async function addEntry(userId, { date, readingGenerated, readingConsumed, dailyGenerated, dailyConsumed }) {
   const dateObj = parseDateStr(date);
   const docRef = await addDoc(collection(db, COLLECTION), {
     date: Timestamp.fromDate(dateObj),
     dateStr: date,
-    generated: parseFloat(generated),
-    consumed: parseFloat(consumed),
+    readingGenerated: parseFloat(readingGenerated),
+    readingConsumed: parseFloat(readingConsumed),
+    dailyGenerated: parseFloat(dailyGenerated),
+    dailyConsumed: parseFloat(dailyConsumed),
     createdBy: userId,
     createdAt: Timestamp.now(),
   });
@@ -53,14 +55,16 @@ export async function addEntry(userId, { date, generated, consumed }) {
 /**
  * Update an existing entry
  */
-export async function updateEntry(entryId, { date, generated, consumed }) {
+export async function updateEntry(entryId, { date, readingGenerated, readingConsumed, dailyGenerated, dailyConsumed }) {
   const dateObj = parseDateStr(date);
   const docRef = doc(db, COLLECTION, entryId);
   await updateDoc(docRef, {
     date: Timestamp.fromDate(dateObj),
     dateStr: date,
-    generated: parseFloat(generated),
-    consumed: parseFloat(consumed),
+    readingGenerated: parseFloat(readingGenerated),
+    readingConsumed: parseFloat(readingConsumed),
+    dailyGenerated: parseFloat(dailyGenerated),
+    dailyConsumed: parseFloat(dailyConsumed),
     updatedAt: Timestamp.now(),
   });
 }
@@ -116,6 +120,48 @@ export async function getPreviousEntry(userId) {
     collection(db, COLLECTION),
     where("createdBy", "==", userId),
     orderBy("date", "desc"),
+    limit(1)
+  );
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  const doc = snapshot.docs[0];
+  return {
+    id: doc.id,
+    ...doc.data(),
+    date: doc.data().date.toDate(),
+  };
+}
+
+/**
+ * Get previous entry by a specific date
+ */
+export async function getPreviousEntryByDate(userId, dateObj) {
+  const q = query(
+    collection(db, COLLECTION),
+    where("createdBy", "==", userId),
+    where("date", "<", Timestamp.fromDate(dateObj)),
+    orderBy("date", "desc"),
+    limit(1)
+  );
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  const doc = snapshot.docs[0];
+  return {
+    id: doc.id,
+    ...doc.data(),
+    date: doc.data().date.toDate(),
+  };
+}
+
+/**
+ * Get next entry by a specific date
+ */
+export async function getNextEntryByDate(userId, dateObj) {
+  const q = query(
+    collection(db, COLLECTION),
+    where("createdBy", "==", userId),
+    where("date", ">", Timestamp.fromDate(dateObj)),
+    orderBy("date", "asc"),
     limit(1)
   );
   const snapshot = await getDocs(q);

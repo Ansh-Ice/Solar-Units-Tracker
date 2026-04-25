@@ -26,7 +26,7 @@ export default function ComparisonChart({ entries }) {
     datasets: [
       {
         label: "Generated",
-        data: sorted.map((e) => e.generated),
+        data: sorted.map((e) => e.dailyGenerated ?? e.generated),
         backgroundColor: "rgba(249, 115, 22, 0.7)",
         borderColor: "#f97316",
         borderWidth: 1,
@@ -35,7 +35,7 @@ export default function ComparisonChart({ entries }) {
       },
       {
         label: "Consumed",
-        data: sorted.map((e) => e.consumed),
+        data: sorted.map((e) => e.dailyConsumed ?? e.consumed),
         backgroundColor: "rgba(34, 197, 94, 0.7)",
         borderColor: "#22c55e",
         borderWidth: 1,
